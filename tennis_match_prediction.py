@@ -503,32 +503,95 @@ def evaluate_test_season(features: pd.DataFrame, y: pd.Series, best_params: dict
     }
 
 
-def save_evaluation_plots(results: dict) -> list[Path]:
-    """Save two simple plots from the final 2024 evaluation metrics."""
+def save_evaluation_plots(results: dict, tuning: dict) -> list[Path]:
+    """Save simple model, confusion-matrix, tuning, and surface plots."""
     BUILD_DIR.mkdir(parents=True, exist_ok=True)
     saved_paths = []
+    model_names = ["Logistic regression", "Linear SVM", "Random forest"]
 
-    # Confusion matrix for the model with the highest overall 2024 accuracy.
-    matrix = results["models"]["Logistic regression"]["2024"]["confusion_matrix_labels_0_1"]
-    fig, ax = plt.subplots(figsize=(6, 5))
-    image = ax.imshow(matrix, cmap="Blues")
-    ax.set_xticks([0, 1], ["Player B won", "Player A won"])
-    ax.set_yticks([0, 1], ["Player B won", "Player A won"])
-    ax.set_xlabel("Predicted outcome")
-    ax.set_ylabel("Actual outcome")
-    ax.set_title("Logistic regression confusion matrix (2024)")
-    threshold = max(max(row) for row in matrix) / 2
-    for row_index, row in enumerate(matrix):
-        for column_index, value in enumerate(row):
-            ax.text(
-                column_index, row_index, f"{value:,}",
-                ha="center", va="center",
-                color="white" if value > threshold else "#25313C",
-                fontsize=12, fontweight="bold",
-            )
-    fig.colorbar(image, ax=ax, label="Number of matches")
+    # Compare all classifiers with the ranking baseline on the same ranked matches.
+    labels = ["Logistic regression", "Linear SVM", "Random forest", "Rank baseline"]
+    values = [
+        results["models"][name]["2024_same_matches_as_rank_baseline"]["accuracy"] * 100
+        for name in model_names
+    ]
+    values.append(results["rank_only_baseline"]["accuracy"] * 100)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    bars = ax.bar(labels, values, color=["#3478A8", "#238A8D", "#E39B3B", "#8897A5"])
+    ax.set_ylim(0, 70)
+    ax.set_ylabel("Accuracy (%)")
+    ax.set_title("2024 test accuracy (same ranked matches)")
+    ax.tick_params(axis="x", labelrotation=15)
+    for bar, value in zip(bars, values):
+        ax.annotate(f"{value:.2f}%", (bar.get_x() + bar.get_width() / 2, value),
+                    xytext=(0, 4), textcoords="offset points", ha="center", fontsize=9)
+    ax.grid(axis="y", alpha=0.25)
+    ax.set_axisbelow(True)
     fig.tight_layout()
-    path = BUILD_DIR / "confusion_matrix_2024.png"
+    path = BUILD_DIR / "model_accuracy_2024.png"
+    fig.savefig(path, dpi=160, bbox_inches="tight")
+    plt.close(fig)
+    saved_paths.append(path)
+
+    # Show correct and incorrect predictions for every classifier.
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4.5))
+    image = None
+    for ax, model_name in zip(axes, model_names):
+        model_result = results["models"][model_name]["2024"]
+        matrix = model_result["confusion_matrix_labels_0_1"]
+        image = ax.imshow(matrix, cmap="Blues", vmin=0)
+        ax.set_xticks([0, 1], ["B won", "A won"])
+        ax.set_yticks([0, 1], ["B won", "A won"])
+        ax.set_xlabel("Predicted")
+        ax.set_title(f"{model_name}\n{model_result['accuracy']:.1%} accuracy")
+        if ax is axes[0]:
+            ax.set_ylabel("Actual")
+        threshold = max(max(row) for row in matrix) / 2
+        for row_index, row in enumerate(matrix):
+            for column_index, value in enumerate(row):
+                ax.text(column_index, row_index, f"{value:,}", ha="center", va="center",
+                        color="white" if value > threshold else "#25313C", fontsize=10, fontweight="bold")
+    fig.suptitle("2024 confusion matrices (0 = B won, 1 = A won)")
+    fig.subplots_adjust(left=0.06, right=0.90, bottom=0.14, top=0.82, wspace=0.35)
+    fig.colorbar(image, ax=axes, label="Number of matches", shrink=0.8, pad=0.03)
+    path = BUILD_DIR / "confusion_matrices_2024.png"
+    fig.savefig(path, dpi=160, bbox_inches="tight")
+    plt.close(fig)
+    saved_paths.append(path)
+
+    # Plot the 2022 validation accuracy for each setting that was tried.
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4.5))
+    for ax, model_name in zip(axes, model_names):
+        model_tuning = tuning[model_name]
+        trials = model_tuning["trials"]
+        scores = [trial["validation_accuracy"] * 100 for trial in trials]
+        chosen = model_tuning["selected_parameters"]
+        if model_name == "Random forest":
+            categories = [
+                f"depth={trial['parameters']['max_depth']}, leaf={trial['parameters']['min_samples_leaf']}"
+                for trial in trials
+            ]
+            colors = [
+                "#238A8D" if trial["parameters"] == chosen else "#AAB6C2"
+                for trial in trials
+            ]
+            bars = ax.bar(range(len(scores)), scores, color=colors)
+            ax.set_xticks(range(len(categories)), categories, rotation=35, ha="right", fontsize=7)
+        else:
+            c_values = [trial["parameters"]["C"] for trial in trials]
+            ax.plot(c_values, scores, marker="o", color="#3478A8")
+            ax.set_xscale("log")
+            ax.axvline(chosen["C"], color="#E39B3B", linestyle="--", label=f"Selected C={chosen['C']}")
+            ax.set_xticks(c_values, [str(value) for value in c_values])
+            ax.legend(frameon=False, fontsize=8)
+        ax.set_ylim(60, 68)
+        ax.set_title(model_name)
+        ax.set_ylabel("2022 validation accuracy (%)")
+        ax.grid(axis="y", alpha=0.25)
+        ax.set_axisbelow(True)
+    fig.suptitle("Hyperparameter tuning results")
+    fig.tight_layout()
+    path = BUILD_DIR / "hyperparameter_tuning_2022.png"
     fig.savefig(path, dpi=160, bbox_inches="tight")
     plt.close(fig)
     saved_paths.append(path)
@@ -537,7 +600,6 @@ def save_evaluation_plots(results: dict) -> list[Path]:
     by_surface = results["results_by_surface"]
     preferred_order = {"Clay": 0, "Grass": 1, "Hard": 2}
     surfaces = sorted(by_surface, key=lambda name: preferred_order.get(name, 99))
-    model_names = ["Logistic regression", "Linear SVM", "Random forest"]
     fig, ax = plt.subplots(figsize=(7, 5))
     bar_width = 0.24
     centers = list(range(len(surfaces)))
@@ -577,7 +639,7 @@ def main() -> None:
 
     best_params, tuning = tune_models(features, y)
     final_results = evaluate_test_season(features, y, best_params)
-    plot_paths = save_evaluation_plots(final_results)
+    plot_paths = save_evaluation_plots(final_results, tuning)
     output = {
         "project": "ATP tennis match winner prediction",
         "data_source": "Jeff Sackmann-format ATP match CSVs mirrored by farhadGithub/tennis-atp-data",

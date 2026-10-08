@@ -19,7 +19,7 @@ Main hand-in files:
 - `deliverables/project_summary.pdf` — two-page report.
 - `deliverables/presentation_revised.pptx` — final presentation.
 
-`build_files/` holds temporary chart/build output, Python cache, and archived presentation drafts and experiments. It is not needed for submission. If you rerun the script, it writes the cleaned CSV, run summary, a 2024 confusion-matrix plot, and a 2024 accuracy-by-surface plot under `build_files/.codex-build/` for the demo.
+`build_files/` holds temporary chart/build output, Python cache, and archived presentation drafts and experiments. It is not needed for submission. Each run writes four PNG plots under `build_files/.codex-build/`: 2024 model accuracy comparison, confusion matrices for Logistic Regression/SVM/Random Forest, 2022 hyperparameter-tuning results, and 2024 accuracy by court surface. The terminal prints each plot's path when the run finishes.
 
 ## Dataset
 
