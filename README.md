@@ -7,7 +7,8 @@ This student project predicts ATP singles match winners from information that wo
 ```text
 data/                         Yearly source CSVs and one cleaned Excel workbook
 deliverables/                 Two-page project report and presentation slides
-tennis_match_prediction.py    Cleaning, feature engineering, tuning, and evaluation
+tennis_match_prediction.ipynb  Main project notebook; charts display inline
+tennis_match_prediction.py    Equivalent script for running from a terminal
 requirements.txt              Python packages
 README.md                     Project setup and method
 build_files/                  Archived build leftovers; not needed for submission
@@ -29,14 +30,13 @@ The data was collected by Jeff Sackmann / Tennis Abstract and is released under 
 
 ## Setup and run
 
-Use Python 3.10 or newer. Install packages and run the main script from the project root:
+Use Python 3.10 or newer. Install packages from the project root:
 
 ```bash
 python -m pip install -r requirements.txt
-python tennis_match_prediction.py
 ```
 
-The script reads `data/atp_matches_YYYY.csv`, cleans and combines 1991-2024, engineers pre-match features, tunes the models, fits through 2023, and evaluates on 2024. Run time depends on the computer because the random forest grid is trained on the full historical training set.
+Open `tennis_match_prediction.ipynb` in VS Code, select the project's Python environment as the notebook kernel, then choose **Run All**. The notebook reads `data/atp_matches_YYYY.csv`, cleans and combines 1991-2024, engineers pre-match features, tunes the models, fits through 2023, and evaluates on 2024. The run may take a few minutes because the random forest grid is trained on the full historical training set. The plots display inline and are also saved under `build_files/.codex-build/`. The equivalent terminal command is `python tennis_match_prediction.py`.
 
 ## Method
 

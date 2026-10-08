@@ -2,3 +2,4 @@ pandas>=2.2
 numpy>=2.0
 scikit-learn>=1.5
 matplotlib>=3.8
+ipykernel>=6.29
