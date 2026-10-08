@@ -1,0 +1,9 @@
+Dataset: ATP men's singles match results, 1968-2024 (this project analyzes 1991-2024)
+Original compiler: Jeff Sackmann / Tennis Abstract
+Mirror used: https://github.com/farhadGithub/tennis-atp-data
+Format: annual CSV files using the Jeff Sackmann ATP match schema
+License: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
+
+Attribution: Jeff Sackmann / Tennis Abstract. The mirror describes its data as re-hosted from the original ATP repository. This student project is for non-commercial educational use; redistributed adaptations must retain attribution and the same license.
+
+Source fields for current-match outcome, score, duration, aces, serves and break points are retained in the cleaned match workbook when present. They are not used as prediction inputs because they are known only after the match.
