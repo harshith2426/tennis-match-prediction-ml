@@ -20,7 +20,7 @@ Main hand-in files:
 - `deliverables/project_summary.pdf` — two-page report.
 - `deliverables/presentation_revised.pptx` — final presentation.
 
-`build_files/` holds temporary chart/build output, Python cache, and archived presentation drafts and experiments. It is not needed for submission. Each run writes four PNG plots under `build_files/.codex-build/`: 2024 model accuracy comparison, confusion matrices for Logistic Regression/SVM/Random Forest, 2022 hyperparameter-tuning results, and 2024 accuracy by court surface. The terminal prints each plot's path when the run finishes.
+`build_files/` holds temporary chart/build output, Python cache, and archived presentation drafts and experiments. It is not needed for submission. Each run writes four PNG plots under `build_files/.codex-build/`: 2024 model accuracy comparison, confusion matrices for Logistic Regression/SVM/Random Forest, 2022 hyperparameter-tuning results, and 2024 accuracy by court surface. The notebook displays the charts inline and prints the saved paths in its output.
 
 ## Dataset
 
@@ -36,7 +36,7 @@ Use Python 3.10 or newer. Install packages from the project root:
 python -m pip install -r requirements.txt
 ```
 
-Open `tennis_match_prediction.ipynb` in VS Code, select the project's Python environment as the notebook kernel, then choose **Run All**. The notebook reads `data/atp_matches_YYYY.csv`, cleans and combines 1991-2024, engineers pre-match features, tunes the models, fits through 2023, and evaluates on 2024. The run may take a few minutes because the random forest grid is trained on the full historical training set. The plots display inline and are also saved under `build_files/.codex-build/`. The equivalent terminal command is `python tennis_match_prediction.py`.
+Open `tennis_match_prediction.ipynb` in VS Code and select the project's Python environment as the notebook kernel. Run the cells in order: the initial model comparison appears after data preparation, the tuning plot appears after hyperparameter tuning, and the final evaluation plots appear after 2024 evaluation. The notebook reads `data/atp_matches_YYYY.csv`, cleans and combines 1991-2024, engineers pre-match features, tunes the models, fits through 2023, and evaluates on 2024. The complete run may take a few minutes because the random forest grid is trained on the full historical training set. Plots also save under `build_files/.codex-build/`. The equivalent terminal command is `python tennis_match_prediction.py`.
 
 ## Method
 
