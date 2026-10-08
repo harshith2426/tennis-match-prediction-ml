@@ -396,9 +396,15 @@ def get_scores(model: Pipeline, X: pd.DataFrame, y: pd.Series) -> dict:
         "f1_player_a": float(f1_score(y, prediction, zero_division=0)),
         "confusion_matrix_labels_0_1": confusion_matrix(y, prediction, labels=[0, 1]).tolist(),
     }
-    if hasattr(model, "decision_function"):
+    if hasattr(model, "predict_proba"):
+        positive_scores = model.predict_proba(X)[:, 1]
+    elif hasattr(model, "decision_function"):
+        positive_scores = model.decision_function(X)
+    else:
+        positive_scores = None
+    if positive_scores is not None:
         try:
-            result["roc_auc"] = float(roc_auc_score(y, model.decision_function(X)))
+            result["roc_auc"] = float(roc_auc_score(y, positive_scores))
         except ValueError:
             result["roc_auc"] = None
     return result
@@ -666,9 +672,17 @@ def main() -> None:
     }
     results_path = BUILD_DIR / "project_results.json"
     results_path.write_text(json.dumps(output, indent=2, default=str), encoding="utf-8")
-    print("\n2024 test accuracy:")
+    print("\n2024 test metrics:")
     for name, result in final_results["models"].items():
-        print(f"  {name}: {result['2024']['accuracy']:.3%}")
+        metrics = result["2024"]
+        roc_auc = metrics["roc_auc"]
+        roc_auc_text = f"{roc_auc:.3f}" if roc_auc is not None else "N/A"
+        print(
+            f"  {name}: accuracy={metrics['accuracy']:.3%}, "
+            f"precision (A wins)={metrics['precision_player_a']:.3%}, "
+            f"recall (A wins)={metrics['recall_player_a']:.3%}, "
+            f"ROC-AUC={roc_auc_text}"
+        )
     print(f"  Higher-ranked baseline (both ranks known): {final_results['rank_only_baseline']['accuracy']:.3%}")
     print(f"Results saved to {results_path.relative_to(ROOT)}")
     print(f"Clean combined table saved to {cleaned_csv.relative_to(ROOT)}")
