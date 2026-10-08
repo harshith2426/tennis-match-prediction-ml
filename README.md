@@ -18,7 +18,7 @@ Main hand-in files:
 
 - `data/atp_matches_1991_2024.xlsx` — cleaned, combined dataset in one worksheet.
 - `deliverables/project_summary.pdf` — two-page report.
-- `deliverables/presentation_revised.pptx` — final presentation.
+- `deliverables/presentation_revised_metrics_final.pptx` — final presentation with 2024 accuracy, precision, recall, F1, and ROC-AUC for each model.
 
 `build_files/` holds temporary chart/build output, Python cache, and archived presentation drafts and experiments. It is not needed for submission. Each run writes four PNG plots under `build_files/.codex-build/`: 2024 model accuracy comparison, confusion matrices for Logistic Regression/SVM/Random Forest, 2022 hyperparameter-tuning results, and 2024 accuracy by court surface. The notebook displays the charts inline and prints the saved paths in its output.
 
